@@ -1,4 +1,7 @@
 $StudentFolderPath = ".\StudentRepos"
+if (-not (Test-Path -Path $StudentFolderPath)) {
+    New-Item -ItemType Directory -Path $StudentFolderPath
+}
 Set-Location -Path $StudentFolderPath
 $ErrorActionPreference = 'SilentlyContinue'
 function Add-Student 
