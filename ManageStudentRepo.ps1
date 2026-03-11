@@ -38,9 +38,7 @@ function Find-Spaces
 
 function Get-Students
 {
-	$arr = Get-ChildItem .  
-	Where-Object {$_.PSIsContainer} | 
-        Foreach-Object {$_.Name}
+	$arr = Get-ChildItem . | Where-Object {$_.PSIsContainer} | Foreach-Object {$_.Name}
 
 	if($arr.Count -eq 0)
 	{
@@ -53,9 +51,7 @@ function Get-Students
 		Add-Student
 	}
 	}
-	$arr = Get-ChildItem .  
-	Where-Object {$_.PSIsContainer} | 
-        Foreach-Object {$_.Name}
+	$arr = Get-ChildItem . | Where-Object {$_.PSIsContainer} | Foreach-Object {$_.Name}
 
 	$unsortedStudents = foreach($node in $arr)
 	{
