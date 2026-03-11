@@ -38,28 +38,28 @@ function Find-Spaces
 
 function Get-Students
 {
-	$arr = Get-ChildItem . | Where-Object {$_.PSIsContainer} | Foreach-Object {$_.Name}
+    $arr = Get-ChildItem . | Where-Object {$_.PSIsContainer}
 
-	if($arr.Count -eq 0)
-	{
-		Write-Host "How many students to add? " -NoNewline -ForegroundColor DarkGreen
-		[Console]::ForegroundColor = "Green"
-		$numStudents = Read-Host
-		[Console]::ResetColor()
-	for($index = 0; $index -lt $numStudents; $index++)
-	{
-		Add-Student
-	}
-	}
-	$arr = Get-ChildItem . | Where-Object {$_.PSIsContainer} | Foreach-Object {$_.Name}
+    if($arr.Count -eq 0)
+    {
+        Write-Host "How many students to add? " -NoNewline -ForegroundColor DarkGreen
+        [Console]::ForegroundColor = "Green"
+        $numStudents = Read-Host
+        [Console]::ResetColor()
+        for($index = 0; $index -lt $numStudents; $index++)
+        {
+            Add-Student
+        }
+        $arr = Get-ChildItem . | Where-Object {$_.PSIsContainer}
+    }
 
-	$unsortedStudents = foreach($node in $arr)
-	{
-	$name = $node.Name -split " ", 2
-	[pscustomobject]@{Path=$node; LastName=$name[1]}
-	}
-	$sortedStudents = $unsortedStudents | Sort-Object -Property LastName
-	return $sortedStudents
+    $unsortedStudents = foreach($node in $arr)
+    {
+        $name = $node.Name -split " ", 2
+        [pscustomobject]@{Path=$node; LastName=$name[1]}
+    }
+    $sortedStudents = $unsortedStudents | Sort-Object -Property LastName
+    return $sortedStudents
 }
 
 function Show-Students
