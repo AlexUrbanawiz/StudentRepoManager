@@ -6,3 +6,4 @@ To use it, simply run the RunManageStudents.bat file, and follow the prompts giv
 
 When giving the names, make sure the name has a first and last name, as the names are sorted by the last.
 
+It will not function properly with only 1 repo its managing, so make sure to have at least 2.
