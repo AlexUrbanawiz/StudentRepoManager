@@ -100,7 +100,7 @@ function Remove-Student
 	$formattedStudentSelection = "Student Selected: {0}" -f $sortedStudents[$userInput].Path.Name
 	Write-Host $formattedStudentSelection
 	Write-Host "-------" -ForegroundColor Green
-	Remove-Item $sortedStudents[$userInput].Path
+	Remove-Item $sortedStudents[$userInput].Path -Recurse -Force
 	
 }
 
@@ -163,3 +163,4 @@ code .
 Set-Location ../..
 }
 }
+Read-Host "Press Enter to exit"
