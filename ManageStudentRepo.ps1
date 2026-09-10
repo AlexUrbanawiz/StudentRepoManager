@@ -68,6 +68,10 @@ function Validate($userInputType, $userInput, $studentCount=0)
 					}
 
 				}
+				else
+				{
+					$valid = $true
+				}
 			}
 			break
 		}
@@ -197,6 +201,7 @@ $continue = 1
 while($continue)
 {
 $sortedStudents = Get-Students
+$sortedStudents = Get-Students
 Show-Students $sortedStudents
 
 $spaces = Find-Spaces $sortedStudents.Count
@@ -234,7 +239,10 @@ if($userInput -eq $sortedStudents.Count -and $validExtraIndex)
 elseif($userInput -eq $deleteIndex -and $validExtraIndex)
 {Remove-Student $sortedStudents}
 elseif($userInput -eq $deleteAllIndex -and $validExtraIndex)
-{Remove-All}
+{
+	Remove-All
+	$continue = 0
+}
 elseif($userInput -eq $quitIndex -and $validExtraIndex)
 {$continue = 0}
 elseif($validStudentIndex)
