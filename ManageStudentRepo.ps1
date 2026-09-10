@@ -4,15 +4,31 @@ if (-not (Test-Path -Path $StudentFolderPath)) {
 }
 Set-Location -Path $StudentFolderPath
 $ErrorActionPreference = 'SilentlyContinue'
-function Add-Student 
+function Add-Student($studentNumber=0) 
 {
-	Write-Host "Student Name: " -NoNewline -ForegroundColor DarkGreen
-	[Console]::ForegroundColor = "Green"
-	$filename = Read-Host
+	do {
+		Write-Host "Student Name: " -NoNewline -ForegroundColor DarkGreen
+		[Console]::ForegroundColor = "Green"
+		$filename = Read-Host
+		$validFilename = Validate "Student Name" $filename $studentNumber
+		if($validFilename -eq $false)
+		{
+			Write-Host "Invalid name, try again" -ForegroundColor DarkRed
+		}
+	} while ($validFilename -eq $false)
+	
 	[Console]::ResetColor()
-	Write-Host "GitHub repo link: " -NoNewline -ForegroundColor DarkGreen
-	[Console]::ForegroundColor = "Green"
-	$githublink = Read-Host
+	do {
+		Write-Host "GitHub repo link: " -NoNewline -ForegroundColor DarkGreen
+		[Console]::ForegroundColor = "Green"
+		$githublink = Read-Host
+		$validLink = Validate "Github Repo" $githublink
+		if($validLink -eq $false)
+		{
+			Write-Host "Invalid link, try again" -ForegroundColor DarkRed
+		}
+	} while ($validLink -eq $false)
+	
 	[Console]::ResetColor()
 	mkdir $filename
 	Set-Location .\$filename
@@ -20,12 +36,78 @@ function Add-Student
 	Set-Location ..
 }
 
-function Find-Spaces
+function Validate($userInputType, $userInput, $studentCount=0)
 {
-	param
-	(
-		$index
-	)
+	$valid = $false
+	switch($userInputType)
+	{
+		"Student Name" 
+		{
+			# Checks to make sure the student's name is valid by having a first and last name, and making sure the name is not already present
+			$splitName = $userInput -split " ", 2
+			# Write-Host $splitName.Count -ForegroundColor Cyan
+			if($splitName.Count -eq 2)
+			{
+				if($studentCount -gt 0)
+				{
+					$duplicate = $false
+					$students = Get-Students
+					foreach($student in $students)
+					{
+						$loweredStudentFullName = [string]$student.FullName.ToLower()
+						$loweredUserInput = [string]$userInput.ToLower()
+
+						if($loweredStudentFullName -eq $loweredUserInput)
+						{
+							$duplicate = $true
+						}
+					}
+					if(-not $duplicate)
+					{
+						$valid = $true
+					}
+
+				}
+			}
+			break
+		}
+		"Github Repo" 
+		{
+			# Checks to make sure the link is valid by making sure the beginnign of the string matches that of a github repo link, and the end is .git
+			# The first 19 characters of a gitub repolink are "https://github.com/", and the final 4 are ".git"
+			$urlStart = $userInput.Substring(0, 19)
+			$urlEnd = $userInput.Substring($userInput.Length -4)
+			if($urlStart -eq "https://github.com/" -and $urlEnd -eq ".git")
+			{
+				$valid = $true
+			}
+			break
+		}
+		"Student Index" 
+		{
+			# Checks to make sure the index inputted is an existing student
+			if ($studentCount -gt 0 -and $userInput -lt $studentCount -and $userInput -ge 0 -and $userInput -is [int]) 
+			{
+				$valid = $true
+			}
+			break
+
+		}
+		"Extra Index"
+		{
+			# studentCountExtra is the number of students + number of extra indices (Add student, delete student ...)
+			$studentCountExtra = $studentCount + 3
+			if ($userInput -is [int] -and $userInput -ge $studentCount -and $userInput -le $studentCountExtra) 
+			{
+				$valid = $true
+			}
+		}
+	}
+	return $valid
+}
+
+function Find-Spaces($index)
+{
 	$spaces = "" 
 	if($index -lt 10)
 	{$spaces = "  "}
@@ -48,7 +130,7 @@ function Get-Students
         [Console]::ResetColor()
         for($index = 0; $index -lt $numStudents; $index++)
         {
-            Add-Student
+            Add-Student $index
         }
         $arr = Get-ChildItem . | Where-Object {$_.PSIsContainer}
     }
@@ -56,7 +138,7 @@ function Get-Students
     $unsortedStudents = foreach($node in $arr)
     {
         $name = $node.Name -split " ", 2
-        [pscustomobject]@{Path=$node; LastName=$name[1]}
+        [pscustomobject]@{Path=$node; LastName=$name[1]; FullName=$name}
     }
     $sortedStudents = $unsortedStudents | Sort-Object -Property LastName
     return $sortedStudents
@@ -116,6 +198,7 @@ while($continue)
 {
 $sortedStudents = Get-Students
 Show-Students $sortedStudents
+
 $spaces = Find-Spaces $sortedStudents.Count
 $formattedAdd = "{0}{1}       -Add Student-" -f $sortedStudents.Count, $spaces
 Write-Host $formattedAdd -ForegroundColor Red
@@ -140,18 +223,21 @@ Write-Host $formattedQuit -ForegroundColor Red
 Write-Host "-------" -ForegroundColor Green
 Write-Host "Index: " -NoNewline -ForegroundColor DarkGreen
 [Console]::ForegroundColor = "Green"
-$userInput = Read-Host
+$rawUserInput = Read-Host
+$userInput = [int]$rawUserInput
+$validStudentIndex = Validate "Student Index" $userInput $sortedStudents.Count
+$validExtraIndex = Validate "Extra Index" $userInput $sortedStudents.Count
 [Console]::ResetColor()
 Write-Host "-------" -ForegroundColor Green
-if($userInput -eq $sortedStudents.Count)
-{Add-Student}
-elseif($userInput -eq $deleteIndex)
+if($userInput -eq $sortedStudents.Count -and $validExtraIndex)
+{Add-Student $sortedStudents.Count}
+elseif($userInput -eq $deleteIndex -and $validExtraIndex)
 {Remove-Student $sortedStudents}
-elseif($userInput -eq $deleteAllIndex)
+elseif($userInput -eq $deleteAllIndex -and $validExtraIndex)
 {Remove-All}
-elseif($userInput -eq $quitIndex)
+elseif($userInput -eq $quitIndex -and $validExtraIndex)
 {$continue = 0}
-else
+elseif($validStudentIndex)
 {
 $formattedStudentSelection = "Student Selected: {0}" -f $sortedStudents[$userInput].Path.Name
 Write-Host $formattedStudentSelection -ForegroundColor DarkGreen
@@ -161,6 +247,10 @@ Set-Location */
 git pull
 code .
 Set-Location ../..
+}
+else
+{
+	Write-Host "Invalid Index, try again" -ForegroundColor DarkRed
 }
 }
 Read-Host "Press Enter to exit"
