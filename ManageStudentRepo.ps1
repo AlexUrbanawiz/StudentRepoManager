@@ -237,11 +237,23 @@ Write-Host "-------" -ForegroundColor Green
 if($userInput -eq $sortedStudents.Count -and $validExtraIndex)
 {Add-Student $sortedStudents.Count}
 elseif($userInput -eq $deleteIndex -and $validExtraIndex)
-{Remove-Student $sortedStudents}
+{
+	Write-Host "WARNING, THIS IS IRREVERSIBLE. DO YOU WANT TO CONTINUE? (y/n)" -ForegroundColor Red
+	$warningResponse = [string](Read-Host).ToLower()
+	if($warningResponse -eq "y")
+	{
+	Remove-Student $sortedStudents
+	}
+}
 elseif($userInput -eq $deleteAllIndex -and $validExtraIndex)
 {
+	Write-Host "WARNING, THIS IS IRREVERSIBLE. DO YOU WANT TO CONTINUE? (y/n)" -ForegroundColor Red
+	$warningResponse = [string](Read-Host).ToLower()
+	if($warningResponse -eq "y")
+	{
 	Remove-All
 	$continue = 0
+	}
 }
 elseif($userInput -eq $quitIndex -and $validExtraIndex)
 {$continue = 0}
