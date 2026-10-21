@@ -304,7 +304,6 @@ $formattedQuit = "{0}{1}       -Quit-" -f $quitIndex, $spaces
 Write-Host $formattedQuit -ForegroundColor Red
 
 
-
 Write-Host "-------" -ForegroundColor Green
 Write-Host "Index: " -NoNewline -ForegroundColor DarkGreen
 [Console]::ForegroundColor = "Green"
@@ -313,45 +312,8 @@ $rawUserInput = Read-Host
 [Console]::ResetColor()
 Write-Host "-------" -ForegroundColor Green
 
-
-# $userInput = [int]$rawUserInput
-# $validStudentIndex = Validate "Student Index" $userInput $sortedStudents.Count
-# $validExtraIndex = Validate "Extra Index" $userInput $sortedStudents.Count
-
 $continue = (Process-Input $rawUserInput $sortedStudents)
 $continue
 
-
-# if($userInput -eq $sortedStudents.Count -and $validExtraIndex)
-# {Add-Student $sortedStudents.Count}
-# elseif($userInput -eq $deleteIndex -and $validExtraIndex)
-# {
-# 	Write-Host "WARNING, THIS IS IRREVERSIBLE. DO YOU WANT TO CONTINUE? (y/n)" -ForegroundColor Red
-# 	$warningResponse = [string](Read-Host).ToLower()
-# 	if($warningResponse -eq "y")
-# 	{
-# 	Remove-Student $sortedStudents
-# 	}
-# }
-# elseif($userInput -eq $deleteAllIndex -and $validExtraIndex)
-# {
-# 	Write-Host "WARNING, THIS IS IRREVERSIBLE. DO YOU WANT TO CONTINUE? (y/n)" -ForegroundColor Red
-# 	$warningResponse = [string](Read-Host).ToLower()
-# 	if($warningResponse -eq "y")
-# 	{
-# 	Remove-All
-# 	$continue = 0
-# 	}
-# }
-# elseif($userInput -eq $quitIndex -and $validExtraIndex)
-# {$continue = 0}
-# elseif($validStudentIndex)
-# {
-# 	Open-Student $userInput
-# }
-# else
-# {
-# 	Write-Host "Invalid Index, try again" -ForegroundColor DarkRed
-# }
 }
 Read-Host "Press Enter to exit"
