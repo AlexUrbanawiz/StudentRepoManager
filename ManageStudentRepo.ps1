@@ -197,9 +197,8 @@ function Remove-All
 
 # I want to be able to either input the index of a student/extra command, or input the name of a student/extra command. And have both work the same.
 
-function Open-Student
+function Open-Student($studentIndex, $sortedStudents)
 {
-	param($studentIndex)
 	$formattedStudentSelection = "Student Selected: {0}" -f $sortedStudents[$studentIndex].Path.Name
 	Write-Host $formattedStudentSelection -ForegroundColor DarkGreen
 	Write-Host "-------" -ForegroundColor Green
@@ -212,10 +211,8 @@ function Open-Student
 }
 
 
-function Process-Input($userInput, $sortedStudents)
+function Get-MenuLookUp($sortedStudents)
 {
-	$userInput = [string]$userInput
-	$proceed = 1
 	$deleteIndex = $sortedStudents.Count + 1
 	$deleteAllIndex = $deleteIndex + 1
 	$quitIndex = $deleteAllIndex + 1
@@ -238,6 +235,25 @@ function Process-Input($userInput, $sortedStudents)
 
 	$hash.add("Quit", $quitIndex)
 	$hash.add([string]$quitIndex, $quitIndex)
+
+	return $hash
+}
+
+function Get-MenuKeys($sortedStudents)
+{
+	$hash = Get-MenuLookUp $sortedStudents
+	return $hash.Keys
+}
+
+
+
+
+function Process-Input($userInput, $sortedStudents)
+{
+	$userInput = [string]$userInput
+	$proceed = 1
+	
+	$hash = Get-MenuLookUp $sortedStudents
 	
 	if($hash.ContainsKey($userInput))
 	{
@@ -261,7 +277,7 @@ function Process-Input($userInput, $sortedStudents)
 				$proceed = 0
 				}}
 			$quitIndex {$proceed = 0}
-			default {Open-Student $hashedInput}
+			default {Open-Student $hashedInput $sortedStudents}
 		}
 	}
 	else
@@ -277,14 +293,51 @@ function ss($studentName)
 	$sortedStudents = Get-Students
 	Process-Input $studentName $sortedStudents
 	Display-Menu
-	# Process-Input $studentName, $sortedStudents
 }
+
+Register-ArgumentCompleter `
+    -CommandName ss `
+    -ParameterName studentName `
+    -ScriptBlock {
+        param(
+            $commandName,
+            $parameterName,
+            $wordToComplete,
+            $commandAst,
+            $fakeBoundParameters
+        )
+
+        $sortedStudents = Get-Students
+        $entries = Get-MenuKeys $sortedStudents
+
+        foreach($entry in $entries)
+        {
+            if($entry -like "$wordToComplete*")
+            {
+                $completionText =
+                    if($entry.Contains(" "))
+                    {
+                        "`"$entry`""
+                    }
+                    else
+                    {
+                        $entry
+                    }
+
+                [System.Management.Automation.CompletionResult]::new(
+                    $completionText,
+                    $entry,
+                    [System.Management.Automation.CompletionResultType]::ParameterValue,
+                    $entry
+                )
+            }
+        }
+    }
+
 
 function Display-Menu()
 {
 	
-	# while($continue -eq 1)
-	# {
 	$sortedStudents = Get-Students
 	$sortedStudents = Get-Students
 	Show-Students $sortedStudents
@@ -310,19 +363,7 @@ function Display-Menu()
 
 
 	Write-Host "-------" -ForegroundColor Green
-	# Write-Host "Index: " -NoNewline -ForegroundColor DarkGreen
-	# [Console]::ForegroundColor = "Green"
-
-	# $rawUserInput = Read-Host
-	# [Console]::ResetColor()
-	# Write-Host "-------" -ForegroundColor Green
-
-	# $continue = (Process-Input $rawUserInput $sortedStudents)
-	# $continue
-
-	# }
+	Write-Host "Use ss <name/index> to access repo" -ForegroundColor Green
 }
 
 Display-Menu
-
-# Read-Host "Press Enter to exit"
