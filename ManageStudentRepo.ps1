@@ -214,10 +214,12 @@ function Open-Student
 
 function Process-Input($userInput, $sortedStudents)
 {
+	$userInput = [string]$userInput
 	$proceed = 1
 	$deleteIndex = $sortedStudents.Count + 1
 	$deleteAllIndex = $deleteIndex + 1
 	$quitIndex = $deleteAllIndex + 1
+	$hash = $null
 	$hash = @{}
 	for ($i = 0; $i -lt $sortedStudents.Count; $i++) {
 		$student = $sortedStudents[$i]
@@ -225,7 +227,6 @@ function Process-Input($userInput, $sortedStudents)
 		$hash.add($joinedFullName, $i)
 		$hash.add([string]$i,$i)
 	}
-
 	$hash.add("Add Student", $sortedStudents.Count)
 	$hash.add([string]$sortedStudents.Count, $sortedStudents.Count)
 
@@ -241,7 +242,6 @@ function Process-Input($userInput, $sortedStudents)
 	if($hash.ContainsKey($userInput))
 	{
 		$hashedInput = $hash[$userInput]
-
 		switch($hashedInput)
 		{
 			$sortedStudents.Count {Add-Student}
@@ -269,51 +269,60 @@ function Process-Input($userInput, $sortedStudents)
 		Write-Host "Invalid Index, try again" -ForegroundColor DarkRed
 	}
 
-	return $proceed
-
 }
 
-
-
-
-$continue = 1
-
-while($continue -eq 1)
+function ss($studentName)
 {
-$sortedStudents = Get-Students
-$sortedStudents = Get-Students
-Show-Students $sortedStudents
-
-$spaces = Find-Spaces $sortedStudents.Count
-$formattedAdd = "{0}{1}       -Add Student-" -f $sortedStudents.Count, $spaces
-Write-Host $formattedAdd -ForegroundColor Red
-
-$deleteIndex = $sortedStudents.Count + 1
-$spaces = Find-Spaces $deleteIndex
-$formattedDelete = "{0}{1}       -Delete Student-" -f $deleteIndex, $spaces
-Write-Host $formattedDelete -ForegroundColor Red
-
-$deleteAllIndex = $deleteIndex + 1
-$spaces = Find-Spaces $deleteAllIndex
-$formattedDeleteAll = "{0}{1}       -Delete All Students-" -f $deleteAllIndex, $spaces
-Write-Host $formattedDeleteAll -ForegroundColor Red
-
-$quitIndex = $deleteAllIndex + 1
-$spaces = Find-Spaces $quitIndex
-$formattedQuit = "{0}{1}       -Quit-" -f $quitIndex, $spaces
-Write-Host $formattedQuit -ForegroundColor Red
-
-
-Write-Host "-------" -ForegroundColor Green
-Write-Host "Index: " -NoNewline -ForegroundColor DarkGreen
-[Console]::ForegroundColor = "Green"
-
-$rawUserInput = Read-Host
-[Console]::ResetColor()
-Write-Host "-------" -ForegroundColor Green
-
-$continue = (Process-Input $rawUserInput $sortedStudents)
-$continue
-
+	$sortedStudents = Get-Students
+	$sortedStudents = Get-Students
+	Process-Input $studentName $sortedStudents
+	Display-Menu
+	# Process-Input $studentName, $sortedStudents
 }
-Read-Host "Press Enter to exit"
+
+function Display-Menu()
+{
+	
+	# while($continue -eq 1)
+	# {
+	$sortedStudents = Get-Students
+	$sortedStudents = Get-Students
+	Show-Students $sortedStudents
+
+	$spaces = Find-Spaces $sortedStudents.Count
+	$formattedAdd = "{0}{1}       -Add Student-" -f $sortedStudents.Count, $spaces
+	Write-Host $formattedAdd -ForegroundColor Red
+
+	$deleteIndex = $sortedStudents.Count + 1
+	$spaces = Find-Spaces $deleteIndex
+	$formattedDelete = "{0}{1}       -Delete Student-" -f $deleteIndex, $spaces
+	Write-Host $formattedDelete -ForegroundColor Red
+
+	$deleteAllIndex = $deleteIndex + 1
+	$spaces = Find-Spaces $deleteAllIndex
+	$formattedDeleteAll = "{0}{1}       -Delete All Students-" -f $deleteAllIndex, $spaces
+	Write-Host $formattedDeleteAll -ForegroundColor Red
+
+	$quitIndex = $deleteAllIndex + 1
+	$spaces = Find-Spaces $quitIndex
+	$formattedQuit = "{0}{1}       -Quit-" -f $quitIndex, $spaces
+	Write-Host $formattedQuit -ForegroundColor Red
+
+
+	Write-Host "-------" -ForegroundColor Green
+	# Write-Host "Index: " -NoNewline -ForegroundColor DarkGreen
+	# [Console]::ForegroundColor = "Green"
+
+	# $rawUserInput = Read-Host
+	# [Console]::ResetColor()
+	# Write-Host "-------" -ForegroundColor Green
+
+	# $continue = (Process-Input $rawUserInput $sortedStudents)
+	# $continue
+
+	# }
+}
+
+Display-Menu
+
+# Read-Host "Press Enter to exit"
