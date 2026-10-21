@@ -195,10 +195,90 @@ function Remove-All
 	Get-ChildItem . | Where-Object {$_.PSIsContainer} | Remove-Item -Recurse -Force
 }
 
+# I want to be able to either input the index of a student/extra command, or input the name of a student/extra command. And have both work the same.
+
+function Open-Student
+{
+	param($studentIndex)
+	$formattedStudentSelection = "Student Selected: {0}" -f $sortedStudents[$studentIndex].Path.Name
+	Write-Host $formattedStudentSelection -ForegroundColor DarkGreen
+	Write-Host "-------" -ForegroundColor Green
+	$baseLocation = Get-Location
+	Set-Location $sortedStudents[$userInput].Path
+	Set-Location */
+	git pull
+	code .
+	Set-Location $baseLocation
+}
+
+
+function Process-Input($userInput, $sortedStudents)
+{
+	$proceed = 1
+	$deleteIndex = $sortedStudents.Count + 1
+	$deleteAllIndex = $deleteIndex + 1
+	$quitIndex = $deleteAllIndex + 1
+	$hash = @{}
+	for ($i = 0; $i -lt $sortedStudents.Count; $i++) {
+		$student = $sortedStudents[$i]
+		$joinedFullName = $student.Path.Name
+		$hash.add($joinedFullName, $i)
+		$hash.add([string]$i,$i)
+	}
+
+	$hash.add("Add Student", $sortedStudents.Count)
+	$hash.add([string]$sortedStudents.Count, $sortedStudents.Count)
+
+	$hash.add("Delete Student", $deleteIndex)
+	$hash.add([string]$deleteIndex, $deleteIndex)
+
+	$hash.add("Delete All Students", $deleteAllIndex)
+	$hash.add([string]$deleteAllIndex, $deleteAllIndex)
+
+	$hash.add("Quit", $quitIndex)
+	$hash.add([string]$quitIndex, $quitIndex)
+	
+	if($hash.ContainsKey($userInput))
+	{
+		$hashedInput = $hash[$userInput]
+
+		switch($hashedInput)
+		{
+			$sortedStudents.Count {Add-Student}
+			$deleteIndex {
+				Write-Host "WARNING, THIS IS IRREVERSIBLE. DO YOU WANT TO CONTINUE? (y/n)" -ForegroundColor Red
+				$warningResponse = [string](Read-Host).ToLower()
+				if($warningResponse -eq "y")
+				{
+				Remove-Student $sortedStudents
+				}}
+			$deleteAllIndex {
+				Write-Host "WARNING, THIS IS IRREVERSIBLE. DO YOU WANT TO CONTINUE? (y/n)" -ForegroundColor Red
+				$warningResponse = [string](Read-Host).ToLower()
+				if($warningResponse -eq "y")
+				{
+				Remove-All
+				$proceed = 0
+				}}
+			$quitIndex {$proceed = 0}
+			default {Open-Student $hashedInput}
+		}
+	}
+	else
+	{
+		Write-Host "Invalid Index, try again" -ForegroundColor DarkRed
+	}
+
+	return $proceed
+
+}
+
+
+
 
 $continue = 1
 
-while($continue)
+while($continue -eq 1)
 {
 $sortedStudents = Get-Students
 $sortedStudents = Get-Students
@@ -228,49 +308,50 @@ Write-Host $formattedQuit -ForegroundColor Red
 Write-Host "-------" -ForegroundColor Green
 Write-Host "Index: " -NoNewline -ForegroundColor DarkGreen
 [Console]::ForegroundColor = "Green"
+
 $rawUserInput = Read-Host
-$userInput = [int]$rawUserInput
-$validStudentIndex = Validate "Student Index" $userInput $sortedStudents.Count
-$validExtraIndex = Validate "Extra Index" $userInput $sortedStudents.Count
 [Console]::ResetColor()
 Write-Host "-------" -ForegroundColor Green
-if($userInput -eq $sortedStudents.Count -and $validExtraIndex)
-{Add-Student $sortedStudents.Count}
-elseif($userInput -eq $deleteIndex -and $validExtraIndex)
-{
-	Write-Host "WARNING, THIS IS IRREVERSIBLE. DO YOU WANT TO CONTINUE? (y/n)" -ForegroundColor Red
-	$warningResponse = [string](Read-Host).ToLower()
-	if($warningResponse -eq "y")
-	{
-	Remove-Student $sortedStudents
-	}
-}
-elseif($userInput -eq $deleteAllIndex -and $validExtraIndex)
-{
-	Write-Host "WARNING, THIS IS IRREVERSIBLE. DO YOU WANT TO CONTINUE? (y/n)" -ForegroundColor Red
-	$warningResponse = [string](Read-Host).ToLower()
-	if($warningResponse -eq "y")
-	{
-	Remove-All
-	$continue = 0
-	}
-}
-elseif($userInput -eq $quitIndex -and $validExtraIndex)
-{$continue = 0}
-elseif($validStudentIndex)
-{
-$formattedStudentSelection = "Student Selected: {0}" -f $sortedStudents[$userInput].Path.Name
-Write-Host $formattedStudentSelection -ForegroundColor DarkGreen
-Write-Host "-------" -ForegroundColor Green
-Set-Location $sortedStudents[$userInput].Path
-Set-Location */
-git pull
-code .
-Set-Location ../..
-}
-else
-{
-	Write-Host "Invalid Index, try again" -ForegroundColor DarkRed
-}
+
+
+# $userInput = [int]$rawUserInput
+# $validStudentIndex = Validate "Student Index" $userInput $sortedStudents.Count
+# $validExtraIndex = Validate "Extra Index" $userInput $sortedStudents.Count
+
+$continue = (Process-Input $rawUserInput $sortedStudents)
+$continue
+
+
+# if($userInput -eq $sortedStudents.Count -and $validExtraIndex)
+# {Add-Student $sortedStudents.Count}
+# elseif($userInput -eq $deleteIndex -and $validExtraIndex)
+# {
+# 	Write-Host "WARNING, THIS IS IRREVERSIBLE. DO YOU WANT TO CONTINUE? (y/n)" -ForegroundColor Red
+# 	$warningResponse = [string](Read-Host).ToLower()
+# 	if($warningResponse -eq "y")
+# 	{
+# 	Remove-Student $sortedStudents
+# 	}
+# }
+# elseif($userInput -eq $deleteAllIndex -and $validExtraIndex)
+# {
+# 	Write-Host "WARNING, THIS IS IRREVERSIBLE. DO YOU WANT TO CONTINUE? (y/n)" -ForegroundColor Red
+# 	$warningResponse = [string](Read-Host).ToLower()
+# 	if($warningResponse -eq "y")
+# 	{
+# 	Remove-All
+# 	$continue = 0
+# 	}
+# }
+# elseif($userInput -eq $quitIndex -and $validExtraIndex)
+# {$continue = 0}
+# elseif($validStudentIndex)
+# {
+# 	Open-Student $userInput
+# }
+# else
+# {
+# 	Write-Host "Invalid Index, try again" -ForegroundColor DarkRed
+# }
 }
 Read-Host "Press Enter to exit"
